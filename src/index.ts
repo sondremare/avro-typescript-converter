@@ -5,7 +5,6 @@ import * as commandLineArgs from 'command-line-args';
 import { OptionDefinition } from 'command-line-args';
 import * as getUsage from 'command-line-usage';
 import { avroToTypeScript, RecordType } from './avro-typescript';
-import { fileURLToPath } from 'url';
 import { getFilesFromInput } from './utils.js';
 
 export interface IOptionDefinition extends OptionDefinition {
@@ -96,7 +95,7 @@ const convert = () => {
   }
   options.input.forEach(input => {
     const validInputFiles = getFilesFromInput(input);
-    validInputFiles.forEach(input => {
+    validInputFiles.forEach((input: string) => {
         const schemaText = fs.readFileSync(input, 'UTF8');
         const schema = JSON.parse(schemaText) as RecordType;
         const outFile = `${path.basename(input, path.extname(input))}.ts`;
@@ -107,7 +106,7 @@ const convert = () => {
         }
     });
   });
-}
+};
 
 convert();
 console.log('done');

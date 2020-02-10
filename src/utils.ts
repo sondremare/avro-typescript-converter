@@ -59,15 +59,26 @@ export const getFilesFromInput = (inputFileOrFolder: string, extension: string =
 Did you maybe forget to specify the "-o" flag for an output folder?`);
     return [];
   }
-  if (fs.statSync(inputFileOrFolder).isFile()) {
+  const fileStats = fs.statSync(inputFileOrFolder);
+  if (fileStats.isFile()) {
     return [inputFileOrFolder];
   }
-  if (fs.statSync(inputFileOrFolder).isDirectory()) {
-    const folderFiles = fs.readdirSync(inputFileOrFolder, {withFileTypes: true})
-      .filter(f => f.isFile())
-      .filter(f => f.name.endsWith(extension))
-      .map(f => path.join(inputFileOrFolder, f.name));
-    return folderFiles;
+  if (fileStats.isDirectory()) {
+    return getFilesInDirectory(inputFileOrFolder, extension);
   }
   return [];
+};
+
+function getFilesInDirectory(directory: string, extension: string, files: string[] = []): string[] {
+  const folderFiles = fs.readdirSync(directory, { withFileTypes: true });
+  for (const file of folderFiles) {
+    const filePath = path.resolve(directory, file.name);
+    if (file.isDirectory()) {
+      const recursiveFiles = getFilesInDirectory(filePath, extension, files);
+      files.push(...recursiveFiles);
+    } else if (file.isFile() && file.name.endsWith(extension)) {
+      files.push(filePath);
+    }
+  }
+  return files;
 }

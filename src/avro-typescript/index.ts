@@ -36,9 +36,13 @@ export const convertPrimitive = (avroType: string) => {
 };
 
 /** Converts an Avro record type to a TypeScript file */
-export const avroToTypeScript = (recordType: RecordType): string => {
+export const avroToTypeScript = (recordType: RecordType | EnumType): string => {
   const output: string[] = [];
-  convertRecord(recordType, output);
+  if (recordType.type === 'enum') {
+    convertEnum(recordType, output);
+  } else {
+    convertRecord(recordType, output);
+  }
   return output.join('\n');
 };
 
