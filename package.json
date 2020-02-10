@@ -8,8 +8,8 @@
   "scripts": {
     "start": "tsc -w",
     "build": "tsc",
-    "patch-release": "npm version patch && npm publish && git push --follow-tags",
-    "minor-release": "npm version minor && npm publish && git push --follow-tags",
+    "patch-release": "npm run build && npm version patch && npm publish && git push --follow-tags",
+    "minor-release": "npm run build && npm version minor && npm publish && git push --follow-tags",
     "example": "node dist/src/index.js -i example/standard_cap-value.avsc"
   },
   "repository": {
