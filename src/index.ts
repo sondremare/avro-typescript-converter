@@ -97,7 +97,8 @@ const convert = () => {
     const validInputFiles = getFilesFromInput(input);
     validInputFiles.forEach((input: string) => {
         const schemaText = fs.readFileSync(input, 'UTF8');
-        const schema = JSON.parse(schemaText) as RecordType;
+        const strippedSchemaText = schemaText.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g,''); // strip away comments
+        const schema = JSON.parse(strippedSchemaText) as RecordType;
         const outFile = `${path.basename(input, path.extname(input))}.ts`;
         const result = avroToTypeScript(schema as RecordType).replace(/\t/g, '  ');
         fs.writeFileSync(path.join(outFolder, outFile), result, 'UTF8');
