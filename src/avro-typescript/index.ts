@@ -49,11 +49,16 @@ export const avroToTypeScript = (recordType: RecordType | EnumType): string => {
 const stripNamespace = (name: string) => name.split('.').pop() as string;
 
 /** Convert an Avro Record type. Return the name, but add the definition to the file */
-const convertRecord = (recordType: RecordType, buffer: string[]): string => {
+const convertRecord = (recordType: RecordType, buffer: string[], parentRecordType?: RecordType): string => {
   const doc = document(recordType);
-  const cleanName = `I${stripNamespace(recordType.name)}`;
+  let cleanName = '';
+  if (parentRecordType) {
+    cleanName = `I${stripNamespace(parentRecordType.name)}${stripNamespace(recordType.name)}`;
+  } else {
+    cleanName = `I${stripNamespace(recordType.name)}`;
+  }
   const interfaceDef = `${doc}export interface ${cleanName} {
-${recordType.fields.map(field => convertFieldDec(field, buffer)).join('\n')}
+${recordType.fields.map(field => convertFieldDec(field, buffer, recordType)).join('\n')}
 }
 `;
   buffer.push(interfaceDef);
@@ -71,7 +76,7 @@ const convertEnum = (enumType: EnumType, buffer: string[]): string => {
   return enumType.name;
 };
 
-const convertType = (type: Type, buffer: string[]): string => {
+const convertType = (type: Type, buffer: string[], parentRecordType?: RecordType): string => {
   // if it's just a name, then use that
   if (typeof type === 'string') {
     return convertPrimitive(type);
@@ -85,7 +90,7 @@ const convertType = (type: Type, buffer: string[]): string => {
       .join(' | ');
   } else if (isRecordType(type)) {
     // record, use the name and add to the buffer
-    return convertRecord(type, buffer);
+    return convertRecord(type, buffer, parentRecordType);
   } else if (isArrayType(type)) {
     const isUnion = (s: string) => s.indexOf('|') >= 0;
     // array, call recursively for the array element type
@@ -105,9 +110,9 @@ const convertType = (type: Type, buffer: string[]): string => {
   }
 };
 
-const convertFieldDec = (field: Field, buffer: string[]): string => {
+const convertFieldDec = (field: Field, buffer: string[], parentRecordType?: RecordType): string => {
   const doc = document(field, '\t');
-  const type = convertType(field.type, buffer);
+  const type = convertType(field.type, buffer, parentRecordType);
   const replacedType = interfaces.hasOwnProperty(type) ? interfaces[type] : type;
   return `${doc}\t${field.name}${isOptional(field.type) ? '?' : ''}: ${replacedType};`;
 };
