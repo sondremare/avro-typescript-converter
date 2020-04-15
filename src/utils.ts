@@ -74,8 +74,7 @@ function getFilesInDirectory(directory: string, extension: string, files: string
   for (const file of folderFiles) {
     const filePath = path.resolve(directory, file.name);
     if (file.isDirectory()) {
-      const recursiveFiles = getFilesInDirectory(filePath, extension, files);
-      files.push(...recursiveFiles);
+      getFilesInDirectory(filePath, extension, files);
     } else if (file.isFile() && file.name.endsWith(extension)) {
       files.push(filePath);
     }
