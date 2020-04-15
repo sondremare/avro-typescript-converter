@@ -89,10 +89,15 @@ const convert = () => {
     console.log(usage);
     process.exit(0);
   }
-  const outFolder = options.outFolder ? path.resolve(process.cwd(), options.outFolder) : path.dirname(options.input[0]);
-  if (!fs.existsSync(outFolder)) {
-    fs.mkdirSync(outFolder);
+
+  let outFolder: string;
+  if (options.outFolder) {
+    outFolder = path.resolve(process.cwd(), options.outFolder);
+    if (!fs.existsSync(outFolder)) {
+      fs.mkdirSync(outFolder);
+    }
   }
+
   options.input.forEach(input => {
     const validInputFiles = getFilesFromInput(input);
     validInputFiles.forEach((input: string) => {
@@ -101,6 +106,9 @@ const convert = () => {
         const schema = JSON.parse(strippedSchemaText) as RecordType;
         const outFile = `${path.basename(input, path.extname(input))}.ts`;
         const result = avroToTypeScript(schema as RecordType).replace(/\t/g, '  ');
+        if (!options.outFolder) {
+          outFolder = path.dirname(input);
+        }
         fs.writeFileSync(path.join(outFolder, outFile), result, 'UTF8');
         if (options.verbose) {
           console.log(`${result} is written to ${outFile} in ${outFolder}.`);
