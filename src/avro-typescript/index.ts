@@ -88,7 +88,7 @@ const convertType = (type: Type, buffer: string[], rootRecordType?: RecordType):
     const isUnique = (value: any, index: number, arr: any[]) => arr.indexOf(value) === index;
     // array means a Union. Use the names and call recursively
     return type
-      .map(t => stripNamespace(convertType(t, buffer)))
+      .map(t => stripNamespace(convertType(t, buffer, rootRecordType)))
       .map(n => (interfaces.hasOwnProperty(n) ? interfaces[n] : n))
       .filter(isUnique)
       .join(' | ');
@@ -98,13 +98,13 @@ const convertType = (type: Type, buffer: string[], rootRecordType?: RecordType):
   } else if (isArrayType(type)) {
     const isUnion = (s: string) => s.indexOf('|') >= 0;
     // array, call recursively for the array element type
-    const name = stripNamespace(convertType(type.items, buffer));
+    const name = stripNamespace(convertType(type.items, buffer, rootRecordType));
     const properName = interfaces.hasOwnProperty(name) ? interfaces[name] : name;
     return isUnion(properName) ? `Array<${properName}>` : `${properName}[]`;
     // return `${convertType(type.items, buffer)}[]`;
   } else if (isMapType(type)) {
     // Dictionary of types, string as key
-    return `{ [key: string]: ${convertType(type.values, buffer)} }`;
+    return `{ [key: string]: ${convertType(type.values, buffer, rootRecordType)} }`;
   } else if (isEnumType(type)) {
     // array, call recursively for the array element type
     return convertEnum(type, buffer, rootRecordType);
