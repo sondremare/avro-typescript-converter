@@ -1,6 +1,6 @@
 {
   "name": "@sondremare/avro-typescript-converter",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Convert an AVRO schema to a TypeScript interface.",
   "main": "dist/src/index.js",
   "author": "Rinze Bruining, Erik Vullings, Sondre Mære Overskaug",
