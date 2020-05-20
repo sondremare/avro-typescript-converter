@@ -16,7 +16,7 @@ export { RecordType } from './model';
 const interfaces = {} as { [key: string]: string };
 
 /** Convert a primitive type from avro to TypeScript */
-export const convertPrimitive = (avroType: string) => {
+export const convertPrimitive = (avroType: string, hasDefaultValue: boolean) => {
   switch (avroType) {
     case 'long':
     case 'int':
@@ -26,6 +26,9 @@ export const convertPrimitive = (avroType: string) => {
     case 'bytes':
       return 'Buffer';
     case 'null':
+      if (hasDefaultValue) {
+        return 'null';
+      }
       return 'null | undefined';
     case 'boolean':
       return 'boolean';
@@ -76,15 +79,15 @@ const convertEnum = (enumType: EnumType, buffer: string[]): string => {
   return enumType.name;
 };
 
-const convertType = (type: Type, buffer: string[], parentRecordType?: RecordType): string => {
+const convertType = (type: Type, hasDefaultValue: boolean, buffer: string[], parentRecordType?: RecordType): string => {
   // if it's just a name, then use that
   if (typeof type === 'string') {
-    return convertPrimitive(type);
+    return convertPrimitive(type, hasDefaultValue);
   } else if (type instanceof Array) {
     const isUnique = (value: any, index: number, arr: any[]) => arr.indexOf(value) === index;
     // array means a Union. Use the names and call recursively
     return type
-      .map(t => stripNamespace(convertType(t, buffer)))
+      .map(t => stripNamespace(convertType(t, hasDefaultValue, buffer)))
       .map(n => (interfaces.hasOwnProperty(n) ? interfaces[n] : n))
       .filter(isUnique)
       .join(' | ');
@@ -94,13 +97,13 @@ const convertType = (type: Type, buffer: string[], parentRecordType?: RecordType
   } else if (isArrayType(type)) {
     const isUnion = (s: string) => s.indexOf('|') >= 0;
     // array, call recursively for the array element type
-    const name = stripNamespace(convertType(type.items, buffer));
+    const name = stripNamespace(convertType(type.items, hasDefaultValue, buffer));
     const properName = interfaces.hasOwnProperty(name) ? interfaces[name] : name;
     return isUnion(properName) ? `Array<${properName}>` : `${properName}[]`;
     // return `${convertType(type.items, buffer)}[]`;
   } else if (isMapType(type)) {
     // Dictionary of types, string as key
-    return `{ [key: string]: ${convertType(type.values, buffer)} }`;
+    return `{ [key: string]: ${convertType(type.values, hasDefaultValue, buffer)} }`;
   } else if (isEnumType(type)) {
     // array, call recursively for the array element type
     return convertEnum(type, buffer);
@@ -112,9 +115,10 @@ const convertType = (type: Type, buffer: string[], parentRecordType?: RecordType
 
 const convertFieldDec = (field: Field, buffer: string[], parentRecordType?: RecordType): string => {
   const doc = document(field, '\t');
-  const type = convertType(field.type, buffer, parentRecordType);
+  const hasDefaultValue = !!(field.default || field.default === null);
+  const type = convertType(field.type, hasDefaultValue, buffer, parentRecordType);
   const replacedType = interfaces.hasOwnProperty(type) ? interfaces[type] : type;
-  return `${doc}\t${field.name}${isOptional(field.type) ? '?' : ''}: ${replacedType};`;
+  return `${doc}\t${field.name}${isOptional(field.type) && !hasDefaultValue ? '?' : ''}: ${replacedType};`;
 };
 
 /** Create documentation, if it exists */
