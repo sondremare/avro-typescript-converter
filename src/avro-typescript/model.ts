@@ -41,6 +41,13 @@ export interface NamedType extends BaseType {
   type: string;
 }
 
+export interface LogicalDecimalType extends BaseType {
+  type: 'bytes',
+  logicalType: 'decimal',
+  precision: number;
+  scale: number;
+}
+
 export const isRecordType = (type: BaseType): type is RecordType => type.type === 'record';
 
 export const isArrayType = (type: BaseType): type is ArrayType => type.type === 'array';
@@ -48,6 +55,10 @@ export const isArrayType = (type: BaseType): type is ArrayType => type.type === 
 export const isMapType = (type: BaseType): type is MapType => type.type === 'map';
 
 export const isEnumType = (type: BaseType): type is EnumType => type.type === 'enum';
+
+export const isLogicalDecimalType = (type: BaseType): type is LogicalDecimalType => {
+  return type.type === 'bytes' && (type as LogicalDecimalType).logicalType === 'decimal';
+}
 
 export const isUnion = (type: Type): type is NamedType[] => type instanceof Array;
 
