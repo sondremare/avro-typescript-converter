@@ -9,6 +9,7 @@ import {
   RecordType,
   EnumType,
   isOptional,
+  isLogicalDecimalType,
 } from './model';
 import { createDocumentation } from '../utils';
 export { RecordType } from './model';
@@ -107,6 +108,8 @@ const convertType = (type: Type, hasDefaultValue: boolean, buffer: string[], par
   } else if (isEnumType(type)) {
     // array, call recursively for the array element type
     return convertEnum(type, buffer);
+  } else if (isLogicalDecimalType(type)) {
+    return 'number';
   } else {
     console.error('Cannot work out type', type);
     return 'UNKNOWN';

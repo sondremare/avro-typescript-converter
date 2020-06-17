@@ -184,6 +184,15 @@
               }
             },
             {
+              "name": "amount",
+              "type": {
+                "type": "bytes",
+                "logicalType": "decimal",
+                "precision": 5,
+                "scale": 3
+              }
+            },
+            {
               "name": "audience",
               "type": ["null", "string"],
               "default": null
