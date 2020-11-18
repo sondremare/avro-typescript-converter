@@ -13,6 +13,11 @@
       "type": "string"
     },
     {
+      "name": "url",
+      "type": "string",
+      "doc": "A documentation field containing an example url http://www.example.com"
+    },
+    {
       "name": "sent",
       "type": "string",
       "doc": "TODO xs:dateTime Used pattern"

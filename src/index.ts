@@ -102,7 +102,7 @@ const convert = () => {
     const validInputFiles = getFilesFromInput(input);
     validInputFiles.forEach((input: string) => {
         const schemaText = fs.readFileSync(input, 'UTF8');
-        const strippedSchemaText = schemaText.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g,''); // strip away comments
+        const strippedSchemaText = schemaText.replace(/(?<!:)(\/\*[\s\S]*?\*\/|\/\/.*)/g,''); // strip away comments but not urls (we check if the slash is preceeded by a colon
         const schema = JSON.parse(strippedSchemaText) as RecordType;
         const outFile = `${path.basename(input, path.extname(input))}.ts`;
         const result = avroToTypeScript(schema as RecordType).replace(/\t/g, '  ');
